@@ -2,9 +2,8 @@
 
 Root kerja: workspace root (`./`).
 
-**Produksi konten baru → pakai skill `veralex-konten`**
-(`.opencode/skills/veralex-konten/SKILL.md`): alur 11 langkah, 4 gate approval,
-aturan anti-ulang, dan hukum teknis render. Cek `konten-log.md` sebelum mulai.
+**Produksi konten baru → pakai skill `kentang-motion`**
+(`.opencode/skills/kentang-motion/SKILL.md`): alur 5 langkah, gaya Kok Bisa (bouncy, metafora kartun literal, reverse hook), safe zone 9:16, dan jualan di ekor (marketing conversion). Cek `konten-log.md` sebelum mulai.
 
 Pipeline video dijalankan via `./engine` di root repository.
 
