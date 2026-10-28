@@ -71,12 +71,106 @@ Tambahkan micro-animations di sekeliling adegan:
 Layar Reels/TikTok/Shorts dipenuhi tombol antarmuka:
 - **Zona Terlarang Atas (0–280px):** Search bar, tombol Back, nama audio.
 - **Zona Terlarang Kanan (900–1080px):** Tombol Like, Comment, Share, Remix.
-- **Zona Terlarang Bawah (1440–1920px):** Nama akun, caption panjang, tombol sound.
+- **Zona Terlarang Bawah (1340–1920px):** Nama akun, caption 2–3 baris, tombol sound.
 
 ### Standar Koordinat Panggung 1080×1920:
-- **Fokus Karakter / Objek Utama:** `Y = 750 – 1250` (Tengah panggung).
-- **Subtitles:** **Wajib `bottom: 500px`** (atau `Y = 1380`), teks tebal `Nunito 600–800`, ukuran `38–44px`, 3-lapis drop-shadow hitam tebal agar kontras di latar warna apa pun.
+- **Fokus Karakter / Objek Utama:** `Y = 700 – 1200` (Tengah panggung).
 - **Judul/Headline Panggung:** `Y = 360 – 480`.
+- **Subtitles (CapCut Kinetic Style):** **Wajib `bottom: 580px`** (aman total di atas caption panjang TikTok/Reels!).
+
+---
+
+## 4. Modul Subtitle CapCut (Kinetic Word-by-Word Highlight)
+
+Format subtitle standar yang menahan retensi penonton:
+
+### A. Tampilan Visual (CSS)
+- **Posisi:** `bottom: 580px`, `left: 60px`, `right: 60px`.
+- **Tipografi:** `Baloo 2`, 800 weight, uppercase, `font-size: 44px`.
+- **Kata Pasif:** Putih bersih `#FFFFFF`, shadow tebal (`0 4px 0 #0E1D26, 0 8px 24px rgba(0,0,0,0.85)`).
+- **Kata Aktif (Sedang Diucap):** Kuning CapCut `#FFE814` (atau Cyan `#00F2FE`), membal sedikit (`scale: 1.18`), glow halus.
+
+```css
+#sub {
+  position: absolute;
+  left: 60px; right: 60px; bottom: 580px;
+  text-align: center;
+  font: 800 44px/1.3 'Baloo 2', 'Nunito', system-ui, sans-serif;
+  text-transform: uppercase;
+  pointer-events: none;
+  z-index: 40;
+}
+.w {
+  display: inline-block;
+  color: #FFFFFF;
+  margin: 0 7px;
+  text-shadow: 0 4px 0 #0E1D26, 0 8px 22px rgba(0,0,0,0.9);
+  transition: transform 0.08s ease, color 0.08s ease;
+}
+.w.active {
+  color: #FFE814; /* Kuning CapCut */
+  transform: scale(1.18);
+  text-shadow: 0 4px 0 #0E1D26, 0 0 20px rgba(255, 232, 20, 0.65);
+}
+```
+
+### B. Animasi Masuk/Keluar (Pop & Fade)
+Saat frasa baru muncul:
+- Frasa pop-in membal cepat (`scale: 0.88` → `1.06` → `1.0`).
+- Saat frasa selesai: fade-out cepat (0.15 dtk).
+
+### C. Runner Script Subtitle (Otomatis bagi durasi per kata)
+```javascript
+// Array format: [tStart, tEnd, "Kalimat lengkap"]
+const SUBS = [
+  [0.20, 2.20, "Lagi banjir orderan"],
+  [2.25, 4.45, "diajak kerja sama retail raksasa"],
+  [4.50, 6.95, "tapi batal dalam lima detik"]
+];
+
+const subEl = document.getElementById('sub');
+let currentSub = -1;
+
+function subUpdate() {
+  const t = tl.time();
+  let idx = -1;
+  for (let k = 0; k < SUBS.length; k++) {
+    if (t >= SUBS[k][0] && t < SUBS[k][1]) { idx = k; break; }
+  }
+
+  if (idx !== currentSub) {
+    currentSub = idx;
+    if (idx < 0) {
+      subEl.innerHTML = '';
+      subEl.style.visibility = 'hidden';
+      return;
+    }
+    const [t0, t1, text] = SUBS[idx];
+    const words = text.split(' ');
+    const wordDur = (t1 - t0) / words.length;
+    
+    subEl.innerHTML = words.map((w, i) => 
+      `<span class="w" data-t0="${t0 + i * wordDur}" data-t1="${t0 + (i + 1) * wordDur}">${w}</span>`
+    ).join('');
+    subEl.style.visibility = 'visible';
+    gsap.fromTo(subEl, { scale: 0.88 }, { scale: 1, duration: 0.22, ease: "back.out(2)" });
+  }
+
+  if (currentSub >= 0) {
+    const spans = subEl.querySelectorAll('.w');
+    spans.forEach(sp => {
+      const w0 = parseFloat(sp.getAttribute('data-t0'));
+      const w1 = parseFloat(sp.getAttribute('data-t1'));
+      if (t >= w0 && t < w1) {
+        sp.classList.add('active');
+      } else {
+        sp.classList.remove('active');
+      }
+    });
+  }
+}
+gsap.ticker.add(subUpdate);
+```
 
 ---
 
