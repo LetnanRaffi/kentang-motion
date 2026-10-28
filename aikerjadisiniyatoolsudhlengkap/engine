@@ -1,0 +1,153 @@
+#!/usr/bin/env bash
+# ==============================================================================
+# KentangMotion Engine (v1.0)
+# Ultra-lightweight sequential animation renderer for low-spec machines.
+# Stack: GSAP (SVG stage) + Chrome Headless Shell (sequential) + FFmpeg
+# ==============================================================================
+set -euo pipefail
+
+ROOT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+if [ ! -d "$ROOT_DIR/tools" ] && [ -d "$ROOT_DIR/aikerjadisiniyatoolsudhlengkap/tools" ]; then
+  ROOT_DIR="$ROOT_DIR/aikerjadisiniyatoolsudhlengkap"
+fi
+TOOLS_DIR="$ROOT_DIR/tools"
+
+usage() {
+  cat <<'EOF'
+KentangMotion Engine (v1.0) - CLI Runner
+Usage: ./engine <command> [arguments]
+
+Commands:
+  setup                          Cek dependency sistem & install Remotion (1x di laptop baru)
+  new    <konten-id>             Scaffold folder konten baru
+  serve                          Start server lokal (port 8123) untuk render
+  audio  <konten-id> [dur]       Generate SFX + Score + Mix dengan VO
+  render <konten-id> [dur]       Render frame-by-frame via chrome-headless-shell
+  encode <konten-id>             Jahit frame + mix.wav jadi MP4 akhir
+  export <konten-id> [dur]       Jalankan render + encode sekaligus
+  status                         Cek status server & proses render
+
+Contoh di laptop baru:
+  git clone <repo> && cd <repo>
+  ./engine setup
+  ./engine export konten-2-2026-10-28 39.2
+EOF
+  exit 1
+}
+
+CMD=${1:-}
+shift || true
+
+ensure_server() {
+  if ! curl -s -o /dev/null "http://127.0.0.1:8123/"; then
+    echo "Starting local HTTP server on :8123..."
+    nohup python3 -m http.server 8123 --directory "$ROOT_DIR/simpenhtml" >/tmp/kentang-server.log 2>&1 &
+    sleep 1
+  fi
+}
+
+case "$CMD" in
+  setup)
+    echo "=== KentangMotion Universal Setup ==="
+    # 1. Check Node
+    if ! command -v node >/dev/null 2>&1; then
+      echo "ERROR: node tidak ditemukan. Install Node.js (v18+) terlebih dahulu."
+      exit 1
+    fi
+    echo "✔ Node.js: $(node -v)"
+
+    # 2. Check Python
+    if ! command -v python3 >/dev/null 2>&1; then
+      echo "ERROR: python3 tidak ditemukan. Install Python 3 terlebih dahulu."
+      exit 1
+    fi
+    echo "✔ Python3: $(python3 --version)"
+
+    # 3. Check FFmpeg
+    if ! command -v ffmpeg >/dev/null 2>&1; then
+      echo "ERROR: ffmpeg tidak ditemukan."
+      echo "Jalankan:"
+      echo "  Ubuntu/Debian : sudo apt update && sudo apt install -y ffmpeg"
+      echo "  macOS         : brew install ffmpeg"
+      exit 1
+    fi
+    echo "✔ FFmpeg: $(ffmpeg -version | head -1 | cut -d' ' -f1-3)"
+
+    # 4. Install npm dependencies
+    REPO_ROOT=$(cd "$ROOT_DIR/.." && pwd)
+    TARGET_PKG="$ROOT_DIR"
+    if [ -f "$REPO_ROOT/package.json" ]; then
+      TARGET_PKG="$REPO_ROOT"
+    fi
+
+    echo "==> Menginstall Remotion renderer di $TARGET_PKG..."
+    (cd "$TARGET_PKG" && npm install --no-audit --no-fund)
+
+    echo ""
+    echo "✔ Setup selesai! KentangMotion Engine siap dipakai di mesin ini."
+    ;;
+
+  new)
+    NAME=${1:?Nama konten wajib diisi (contoh: konten-3-2026-10-29)}
+    "$TOOLS_DIR/new-konten.sh" "$NAME"
+    ;;
+
+  serve)
+    echo "Serving $ROOT_DIR/simpenhtml at http://127.0.0.1:8123"
+    python3 -m http.server 8123 --directory "$ROOT_DIR/simpenhtml"
+    ;;
+
+  audio)
+    NAME=${1:?Nama konten wajib diisi}
+    DUR=${2:-39.2}
+    echo "==> Synthesizing SFX..."
+    python3 "$TOOLS_DIR/sfx.py" "$NAME" "$DUR"
+    echo "==> Synthesizing Backsound..."
+    python3 "$TOOLS_DIR/score.py" "$NAME" "$DUR"
+    echo "==> Mixing Audio with Ducking..."
+    "$TOOLS_DIR/mix-audio.sh" "$NAME"
+    ;;
+
+  render)
+    NAME=${1:?Nama konten wajib diisi}
+    DUR=${2:-39.2}
+    ensure_server
+    echo "==> Rendering frames sequentially (Memory-safe mode)..."
+    cd "$ROOT_DIR"
+    KONTEN="$NAME" DUR="$DUR" node "$TOOLS_DIR/render.js"
+    ;;
+
+  encode)
+    NAME=${1:?Nama konten wajib diisi}
+    echo "==> Encoding frames to MP4..."
+    "$TOOLS_DIR/encode.sh" "$NAME"
+    ;;
+
+  export)
+    NAME=${1:?Nama konten wajib diisi}
+    DUR=${2:-39.2}
+    ensure_server
+    echo "==> [1/2] Rendering frames..."
+    cd "$ROOT_DIR"
+    KONTEN="$NAME" DUR="$DUR" node "$TOOLS_DIR/render.js"
+    echo "==> [2/2] Encoding MP4..."
+    "$TOOLS_DIR/encode.sh" "$NAME"
+    echo "Selesai: $ROOT_DIR/hasil/$NAME/$NAME.mp4"
+    ;;
+
+  status)
+    echo "=== Server Status (:8123) ==="
+    if curl -s -o /dev/null "http://127.0.0.1:8123/"; then
+      echo "Server active: http://127.0.0.1:8123/"
+    else
+      echo "Server inactive."
+    fi
+    echo ""
+    echo "=== Active Render / FFmpeg Jobs ==="
+    ps aux | grep -E "render\.js|chrome-headless-shell|ffmpeg" | grep -v grep || echo "No active jobs."
+    ;;
+
+  *)
+    usage
+    ;;
+esac

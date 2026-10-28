@@ -1,0 +1,12 @@
+{
+  "name": "kentang-motion",
+  "version": "1.0.0",
+  "description": "Universal ultra-lightweight storytelling motion engine for any laptop/PC",
+  "private": true,
+  "scripts": {
+    "setup": "./engine setup"
+  },
+  "dependencies": {
+    "@remotion/renderer": "^4.0.534"
+  }
+}

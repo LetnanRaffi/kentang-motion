@@ -1,0 +1,19 @@
+# waktu nama
+2.90 whoosh
+3.05 thud2
+7.00 whoosh
+8.10 whoosh
+12.90 thud2
+14.90 whoosh
+17.62 thud2
+19.20 ding
+26.90 whoosh
+28.88 thud
+29.20 pop
+29.70 pop
+30.20 pop
+31.00 pop2
+33.55 whoosh
+33.75 boom
+35.20 pop
+35.60 pop
