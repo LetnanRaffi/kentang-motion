@@ -27,6 +27,15 @@ Setiap video berdurasi **20–40 detik** dengan struktur 5 babak:
 
 > **Hukum Marketing 75%:** 75% awal adalah murni hiburan edukatif penonton. Brand hanya muncul di 25% terakhir sebagai *jawaban atas masalah*, bukan jualan dari awal.
 
+### Aturan Brainstorming: Wajib 3 Opsi Hook Sebelum Nulis Naskah
+Ketika user meminta ide konten / naskah baru, **JANGAN LANGSUNG NULIS 1 NASKAH KAKU!**
+Agent wajib menyajikan **minimal 3 opsi hook & angle yang kontras** untuk dipilih user:
+1. **Opsi Bongkar Rahasia / Trik Orang Awam:** Membongkar trik yang orang kaya / pemain lama pakai tapi pemula nggak tahu (*"Kenapa bos besar kalau bangkrut rumahnya nggak pernah disita?"*).
+2. **Opsi Provokatif / Pattern Interrupt:** Melarang atau menantang asumsi umum (*"Jangan pernah bikin PT kalau kamu masih waras!"*).
+3. **Opsi Bencana Nyata / Panik Instan:** Konsekuensi fatal konkret yang bisa terjadi besok pagi (*"Besok pagi semua rekening pribadimu bisa dibekukan negara!"*).
+
+Setelah user memilih salah satu opsi, baru buat rundown visual, tulis file `voiceovernaskahai/<k>/naskah-vo.txt`, dan scaffold foldernya.
+
 ---
 
 ## 2. Hukum Animasi Anti-Kaku (Bouncy & Expressive)
@@ -221,6 +230,6 @@ Setiap episode diproduksi secara disiplin:
 - [ ] **Hook ≤ 2 detik:** Apakah ada kata atau visual yang langsung bikin kaget / penasaran di 2 detik awal?
 - [ ] **Metafora Visual:** Apakah ada benda kartun literal (bukan cuma orang pegang kertas/laptop)?
 - [ ] **Bouncy Easing:** Apakah objek masuk membal (`back.out` / `elastic`), bukan geser kaku?
-- [ ] **Safe Zone Subtitle:** Apakah subtitle berada di `bottom: 500px` dan tidak terpotong UI TikTok?
+- [ ] **Safe Zone Subtitle:** Apakah subtitle berada di `bottom: 580px` dan tidak terpotong UI TikTok?
 - [ ] **Audio Mix:** Apakah narasi terdengar jelas di atas BGM (BGM ter-ducking rapi)?
 - [ ] **Jualan di Ekor:** Apakah nama brand baru keluar di 25% terakhir durasi video?
